@@ -1,0 +1,44 @@
+model_list:
+  # --- Latest Models (v4.5 / v4.1) ---
+  - model_name: claude-sonnet-4-5
+    litellm_params:
+      model: gemini/gemini-2.5-flash-preview-09-2025
+      api_key: os.environ/GEMINI_API_KEY
+      # Force a valid budget within range (0-24576)
+      thinking:
+        type: "enabled"
+        budget_tokens: 16000
+
+  - model_name: claude-sonnet-4-5-20250929
+    litellm_params:
+      model: gemini/gemini-2.5-flash-preview-09-2025
+      api_key: os.environ/GEMINI_API_KEY
+      thinking:
+        type: "enabled"
+        budget_tokens: 16000
+
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: gemini/gemini-2.5-flash-preview-09-2025
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: claude-haiku-4-5-20251001
+    litellm_params:
+      model: gemini/gemini-2.5-flash-preview-09-2025
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: claude-opus-4-1
+    litellm_params:
+      model: gemini/gemini-3-pro-preview
+      api_key: os.environ/GEMINI_API_KEY
+      thinking:
+        type: "enabled"
+        budget_tokens: 16000
+
+  - model_name: claude-opus-4-1-20250805
+    litellm_params:
+      model: gemini/gemini-3-pro-preview
+      api_key: os.environ/GEMINI_API_KEY
+      thinking:
+        type: "enabled"
+        budget_tokens: 16000
