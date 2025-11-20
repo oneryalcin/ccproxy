@@ -1,2 +1,3 @@
 claude-code-proxy/
-claude-code-router/
+claude-code-router/*
+!claude-code-router/config.json
