@@ -1,0 +1,42 @@
+FROM python:3.12-slim
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+# We need curl to install Claude Code, and standard build tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    vim \
+    less \
+    ca-certificates \
+    ripgrep \
+    nodejs \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install LiteLLM with proxy dependencies
+RUN pip install "litellm[proxy]"
+
+# Install Claude Code (Native method)
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+# Ensure Claude is in path
+ENV PATH="/root/.local/bin:${PATH}"
+
+# Set working directory
+WORKDIR /app
+
+# Copy LiteLLM config
+COPY litellm_config.yaml /app/config.yaml
+
+# Set Environment Variables for auto-connection
+ENV ANTHROPIC_BASE_URL=http://localhost:4000
+ENV ANTHROPIC_AUTH_TOKEN=sk-dummy-key
+
+# Create an entrypoint script to run LiteLLM in background and then shell
+RUN printf '#!/bin/bash\nlitellm --config /app/config.yaml --port 4000 --detailed_debug > /var/log/litellm.log 2>&1 &\necho "LiteLLM started on port 4000. Logs at /var/log/litellm.log"\nexec "$@"\n' > /entrypoint.sh && chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]
