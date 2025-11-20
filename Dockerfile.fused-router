@@ -1,0 +1,41 @@
+FROM node:20-slim
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    vim \
+    less \
+    ca-certificates \
+    ripgrep \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Claude Code Router globally
+RUN npm install -g @musistudio/claude-code-router
+
+# Install Claude Code (Native method)
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+# Ensure Claude is in path
+ENV PATH="/root/.local/bin:${PATH}"
+
+# Set working directory
+WORKDIR /app
+
+# Set Environment Variables for auto-connection
+ENV ANTHROPIC_BASE_URL=http://localhost:3000
+ENV ANTHROPIC_AUTH_TOKEN=sk-dummy-key
+
+# Create directory for router logs/config
+RUN mkdir -p /root/.claude-code-router
+
+# Create an entrypoint script to run Router in background and then shell
+# We copy the config from volume mount to expected location if needed, 
+# but usually volume mount handles it.
+RUN printf '#!/bin/bash\n# Start Router in background\nccr start --host 0.0.0.0 --port 3000 > /var/log/router.log 2>&1 &\necho "Claude Code Router started on port 3000. Logs at /var/log/router.log"\nexec "$@"\n' > /entrypoint.sh && chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]

@@ -1,4 +1,5 @@
 services:
+  # --- Original Services (Distributed Architecture) ---
   litellm:
     image: ghcr.io/berriai/litellm:main-latest
     ports:
@@ -7,7 +8,6 @@ services:
       - ./litellm_config.yaml:/app/config.yaml
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-    # Ensure LiteLLM runs in a way that it can map requests
     command: [ "--config", "/app/config.yaml", "--port", "4000", "--detailed_debug" ]
 
   router:
@@ -18,23 +18,47 @@ services:
       - ./claude-code-router/config.json:/root/.claude-code-router/config.json
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-    # Logs will be written to /root/.claude-code-router/logs inside the container by the app
 
   claude-code:
     build: .
     volumes:
       - .:/app
-      - claude-config:/root/.claude
-      - claude-config-local:/root/.anthropic
+      - claude-config:/root/.local/share/claude
+      - claude-config-local:/root/.local/state/claude
     environment:
-      # Point Claude Code to the LiteLLM proxy
-      # Note: This assumes LiteLLM can handle the Anthropic format requests that Claude Code sends.
       - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
-      # Set a dummy token to satisfy Claude Code's auth requirement and LiteLLM's check
       - ANTHROPIC_AUTH_TOKEN=sk-dummy-key
-    depends_on:
-      - litellm
-    # Interactive mode settings
+    tty: true
+    stdin_open: true
+
+  # --- New Fused Services (Self-Contained) ---
+  
+  fused-litellm:
+    build: 
+      context: .
+      dockerfile: Dockerfile.fused-litellm
+    volumes:
+      - .:/app
+      - ./litellm_config.yaml:/app/config.yaml
+      - claude-config:/root/.local/share/claude
+      - claude-config-local:/root/.local/state/claude
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    tty: true
+    stdin_open: true
+
+  fused-router:
+    build:
+      context: .
+      dockerfile: Dockerfile.fused-router
+    volumes:
+      - .:/app
+      - ./claude-code-router/config.json:/root/.claude-code-router/config.json
+      - claude-config:/root/.local/share/claude
+      - claude-config-local:/root/.local/state/claude
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
     tty: true
     stdin_open: true
 
