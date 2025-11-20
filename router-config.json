@@ -1,0 +1,41 @@
+{
+  "LOG": true,
+  "LOG_LEVEL": "debug",
+  "APIKEY": "sk-dummy-key",
+  "HOST": "0.0.0.0",
+  "PORT": "3000",
+  "NON_INTERACTIVE_MODE": true,
+  "Providers": [
+    {
+      "name": "openrouter",
+      "api_base_url": "https://openrouter.ai/api/v1/chat/completions",
+      "api_key": "${OPENROUTER_API_KEY}",
+      "models": [
+        "x-ai/grok-4.1-fast"
+      ],
+      "transformer": {
+        "use": ["openrouter"]
+      }
+    },
+    {
+      "name": "gemini",
+      "api_base_url": "https://generativelanguage.googleapis.com/v1beta/models/",
+      "api_key": "${GEMINI_API_KEY}",
+      "models": [
+        "gemini-2.5-flash-preview-09-2025", 
+        "gemini-3-pro-preview",
+        "gemini-2.5-flash-lite-preview-09-2025"
+      ],
+      "transformer": {
+        "use": ["gemini"]
+      }
+    }
+  ],
+  "Router": {
+    "default": "openrouter,x-ai/grok-4.1-fast",
+    "background": "gemini,gemini-2.5-flash-lite-preview-09-2025",
+    "think": "openrouter,x-ai/grok-4.1-fast",
+    "longContext": "openrouter,x-ai/grok-4.1-fast",
+    "webSearch": "gemini,gemini-2.5-flash-preview-09-2025"
+  }
+}
